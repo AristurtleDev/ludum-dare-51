@@ -101,7 +101,7 @@ namespace Aristurtle.TinyGame.Scenes
 
             //  Create the title string, but wrap it so it wraps within the
             //  container
-            string title = "It's Snake, But Every 10 Seconds Food Turns Into Walls";
+            string title = "It's Snake, But Every 10 Seconds The Food Turns Into Walls";
             title = Maths.WordWrap(_titleFont, title, _titleTextContainerRect.Width - 5);
 
             //  Create the title text object. Position it so it's in the center
