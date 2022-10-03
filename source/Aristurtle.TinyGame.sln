@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aristurtle.TinyEngine", "Aristurtle.TinyEngine\Aristurtle.TinyEngine.csproj", "{D2524E06-E795-4E1E-A33C-2C919AE8F3DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aristurtle.TinyGame", "Aristurtle.TinyGame\Aristurtle.TinyGame.csproj", "{ADBCD820-6FD5-4965-B1EE-2451B3B89B7D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D2524E06-E795-4E1E-A33C-2C919AE8F3DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2524E06-E795-4E1E-A33C-2C919AE8F3DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2524E06-E795-4E1E-A33C-2C919AE8F3DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2524E06-E795-4E1E-A33C-2C919AE8F3DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADBCD820-6FD5-4965-B1EE-2451B3B89B7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADBCD820-6FD5-4965-B1EE-2451B3B89B7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADBCD820-6FD5-4965-B1EE-2451B3B89B7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADBCD820-6FD5-4965-B1EE-2451B3B89B7D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
