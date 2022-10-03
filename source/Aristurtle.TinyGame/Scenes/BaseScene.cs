@@ -29,68 +29,107 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Aristurtle.TinyGame;
 
+/// <summary>
+///     The base scene used by other scenes. 
+/// </summary>
 public class BaseScene : Scene
 {
+    //  The input profile used by the game.
     protected InputProfile _input;
+
+    //  The backgroudn texture used to render the background.
     TinyTexture _backgroundTexture;
+
+    //  The destination rectangle used when rendering the background with
+    //  wrapping.
     private Rectangle _backgroundDestination;
+
+    //  The source rectangle used when rendring the background with warpping.
     private Rectangle _backgroundSource;
+
+    //  The offset of the background wrapping.
     protected int _bgOffset;
 
+    //  The direction of the background warpping.
     protected Point _bgOffsetDirection;
+
+    //  The offset of the background warpping on the x axis.
     private int _bgOffsetX;
+
+    //  The offset of the background warpping on the y axis.
     private int _bgOffsetY;
 
+    //  Used to track the time to dispaly the volume adjustment text.
     private TimeSpan _volumeTimer;
+
+    //  The volume adjustment text.
     private Text _volumeText;
+
+    //  Flags if the volume adjustment text is shown.
     private bool _volumeShown;
 
-
+    /// <summary>
+    ///     Initializes a new <see cref="BaseScene"/>.
+    /// </summary>
+    /// <param name="input">
+    ///     The input profile used by the game.
+    /// </param>
+    /// <returns></returns>
     public BaseScene(InputProfile input) : base()
     {
         _input = input;
         _bgOffsetDirection = new Point(0, 0);
     }
 
+    /// <summary>
+    ///     Initializes the base scene.
+    /// </summary>
     public override void Initialize()
     {
         base.Initialize();
 
-        _backgroundDestination = new Rectangle
-        {
-            X = 0,
-            Y = 0,
-            Width = Engine.Graphics.Resolution.X,
-            Height = Engine.Graphics.Resolution.Y
-        };
+        //  Initialzie the destination rect for the background
+        _backgroundDestination = new();
+        _backgroundDestination.X = 0;
+        _backgroundDestination.Y = 0;
+        _backgroundDestination.Width = Engine.Graphics.Resolution.X;
+        _backgroundDestination.Height = Engine.Graphics.Resolution.Y;
 
-        _backgroundSource = new Rectangle
-        {
-            X = _bgOffset,
-            Y = _bgOffset,
-            Width = Engine.Graphics.Resolution.X,
-            Height = Engine.Graphics.Resolution.Y
-        };
+        //  Initialize the background source rect
+        _backgroundSource = new();
+        _backgroundSource.X = _bgOffset;
+        _backgroundSource.Y = _bgOffset;
+        _backgroundSource.Width = Engine.Graphics.Resolution.X;
+        _backgroundSource.Height = Engine.Graphics.Resolution.Y;
 
+        //  Initialize the background texture
+        _backgroundTexture = GameBase.EssentialGameAssets["backgroundTex"] as TinyTexture;
+
+        //  Initialize the volume text
+        SpriteFont font32 = GameBase.EssentialGameAssets["font32"] as SpriteFont;
+        _volumeText = new(font32, "Volume 000");
+        _volumeText.Color = Color.White * 0.5f;
+        _volumeText.OutlineColor = Color.Black * 0.5f;
+        _volumeText.IsOutlined = true;
         _volumeText.X = Engine.Graphics.Resolution.X - _volumeText.Size.X - 5;
         _volumeText.Y = 5;
-
-
     }
 
+    /// <summary>
+    ///     Updates the base scene.
+    /// </summary>
     public override void Update()
     {
+        //  Adjust the offset of the background wrapping
         _bgOffsetX = (_bgOffsetX + _bgOffsetDirection.X) % _backgroundTexture.Width;
         _bgOffsetY = (_bgOffsetY + _bgOffsetDirection.Y) % _backgroundTexture.Height;
 
-        _backgroundSource = new Rectangle
-        {
-            X = _bgOffsetX,
-            Y = _bgOffsetY,
-            Width = Engine.Graphics.Resolution.X,
-            Height = Engine.Graphics.Resolution.Y
-        };
+        //  Adjust the background source rect
+        _backgroundSource.X = _bgOffsetX;
+        _backgroundSource.Y = _bgOffsetY;
 
+
+        //  If the volume up or down buttons were pressed, adjust volume.
         if (_input.VolumeDown.Pressed)
         {
             GameBase.Music.DecreaseVolume();
@@ -106,6 +145,7 @@ public class BaseScene : Scene
             _volumeText.Value = $"Volume: {GameBase.Music.Volume}";
         }
 
+        //  If volume was adjusted, update the timer.
         if(_volumeShown)
         {
             _volumeTimer -= Engine.Time.ElapsedGameTime;
@@ -115,26 +155,20 @@ public class BaseScene : Scene
                 _volumeShown = false;
             }
         }
-
-
-
     }
 
-    public override void LoadContent()
-    {
-        base.LoadContent();
-        _backgroundTexture = new(Engine.GlobalContent.Load<Texture2D>("background_pattern"));
-        SpriteFont font = Engine.GlobalContent.Load<SpriteFont>("RussoOne32");
-        _volumeText = new(font, "Volume 000");
-        _volumeText.Color = Color.White * 0.5f;
-    }
-
+    /// <summary>
+    ///     Unloads content references used by this scene.
+    /// </summary>
     public override void UnloadContent()
     {
         base.UnloadContent();
         _backgroundTexture = null;
     }
 
+    /// <summary>
+    ///     Draws this scene.
+    /// </summary>
     public override void Draw()
     {
         base.Draw();
@@ -147,6 +181,9 @@ public class BaseScene : Scene
         }
     }
 
+    /// <summary>
+    ///     When called by a derived scene class, draws the background.
+    /// </summary>
     protected void DrawBackground()
     {
         Engine.Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.LinearWrap, null, null, null, null);

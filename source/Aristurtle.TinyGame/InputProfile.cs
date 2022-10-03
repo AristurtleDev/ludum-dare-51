@@ -41,20 +41,20 @@ public class InputProfile
     public VirtualButton Pause { get; private set; }
     public VirtualButton Retry { get; private set; }
 
-    public VirtualButton TitleStart { get; private set; }
+    public VirtualButton TitleAction { get; private set; }
 
     public bool AnyButtonPressed => Input.Keyboard.AnyKeyPressed || Input.GamePads[0].AnyButtonPressed();
 
 
     public InputProfile()
     {
-        TitleStart = new VirtualButton();
-        TitleStart.Nodes.Add(new VirtualButton.Keyboard.Key(Keys.Enter));
-        TitleStart.Nodes.Add(new VirtualButton.GamePad.Button(PlayerIndex.One, Buttons.Start));
+        TitleAction = new VirtualButton();
+        TitleAction.Nodes.Add(new VirtualButton.Keyboard.Key(Keys.Enter));
+        TitleAction.Nodes.Add(new VirtualButton.GamePad.Button(PlayerIndex.One, Buttons.Start));
 
         Retry = new VirtualButton();
         Retry.Nodes.Add(new VirtualButton.Keyboard.Key(Keys.Enter));
-        Retry.Nodes.Add(new VirtualButton.GamePad.Button(PlayerIndex.One, Buttons.Start));
+        Retry.Nodes.Add(new VirtualButton.GamePad.Button(PlayerIndex.One, Buttons.Back));
 
         VolumeUp = new VirtualButton();
         VolumeUp.Nodes.Add(new VirtualButton.Keyboard.Key(Keys.OemPlus));
@@ -109,7 +109,7 @@ public class InputProfile
         VolumeDown.Register();
         Pause.Register();
         Retry.Register();
-        TitleStart.Register();
+        TitleAction.Register();
     }
 
     public void Deregister()
@@ -122,7 +122,7 @@ public class InputProfile
         VolumeDown.Deregister();
         Pause.Deregister();
         Retry.Deregister();
-        TitleStart.Deregister();
+        TitleAction.Deregister();
     }
 }
 

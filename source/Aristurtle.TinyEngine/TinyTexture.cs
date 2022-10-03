@@ -248,7 +248,7 @@ public class TinyTexture : IDisposable
     /// <returns>
     ///     A <see cref="TinyTexture"/> instance.
     /// </returns>
-    public TinyTexture GetSubteture(Rectangle relativeRect)
+    public TinyTexture GetSubtexture(Rectangle relativeRect)
     {
         return new TinyTexture(this, relativeRect);
     }

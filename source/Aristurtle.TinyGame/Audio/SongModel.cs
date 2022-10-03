@@ -24,4 +24,19 @@ SOFTWARE.
 
 namespace Aristurtle.TinyGame;
 
+/// <summary>
+///     A DTO record that provides information about a song title.
+/// </summary>
+/// <param name="Location">
+///     The file location of the song, relative to the content directory.
+/// </param>
+/// <param name="Bpm">
+///     The beats per minute of the song.
+/// </param>
+/// <param name="Repeat">
+///     Whether playback of the song should repeat when the song ends.
+/// </param>
+/// <param name="Offset">
+///     The offset to start the playback of the song at.
+/// </param>
 public record SongModel(string Location, float Bpm, bool Repeat, float Offset);

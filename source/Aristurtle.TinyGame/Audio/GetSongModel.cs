@@ -23,14 +23,24 @@ SOFTWARE.
 ---------------------------------------------------------------------------- */
 
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
 namespace Aristurtle.TinyGame;
 
+/// <summary>
+///     Provides an extension method for the <see cref="SongAttribute"/> to 
+///     get the <see cref="SongModel"/> fromt he attribute itself.
+/// </summary>
 public static class SongModelExtensions
 {
+    /// <summary>
+    ///     Gets the <see cref="SongModel"/> from a <see cref="SongAttribute"/>.
+    /// </summary>
+    /// <param name="value">
+    ///     The <see cref="SongAttribute"/> enum.
+    /// </param>
+    /// <returns></returns>
     public static SongModel GetSongModel(this Enum value)
     {
         return value.GetType()

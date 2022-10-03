@@ -97,8 +97,7 @@ public class Engine : Game
         Content.RootDirectory = @"Content";
         FileUtilities.Initialize(Content.RootDirectory);
 
-        ////  Initialize the Scene system
-        //Scene = new SceneManager(this);
+
 
         //  isFixedTimeStep is disabled by default in TinyEngine.  This can be overriden
         //  in the derived game by setting the value to true in the constructor
@@ -156,6 +155,8 @@ public class Engine : Game
     protected override void Initialize()
     {
         base.Initialize();
+
+        Window.Title = Title;
 
         Input.Initialize();
     }

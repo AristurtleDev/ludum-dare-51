@@ -27,14 +27,19 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections;
-using System.Threading;
 
 namespace Aristurtle.TinyGame.Scenes
 {
+    /// <summary>
+    ///     Scene responsible for bootstraping the game, including loading
+    ///     essential game assets, starting the audio, and prsenting the
+    ///     created by text.
+    /// </summary>
     public class Bootstrap : Scene
     {
-        //  Indicates if the content loading has finished;
-        private bool _loaded;
+        //  Indicates if we are finished with the bootstrap scene and should
+        //  change scenes.
+        private bool _changeScene;
 
         //  Indicates if the user presses an input to skip the present text.
         private bool _skipped;
@@ -61,6 +66,12 @@ namespace Aristurtle.TinyGame.Scenes
 
         private Color _textColor;
 
+        /// <summary>
+        ///     Creats a new <see cref="Bootstrap"/> scene.
+        /// </summary>
+        /// <param name="input">
+        ///     The input profile for the game.
+        /// </param>
         public Bootstrap(InputProfile input) : base()
         {
             _input = input;
@@ -68,16 +79,25 @@ namespace Aristurtle.TinyGame.Scenes
             _textColor = Color.White;
         }
 
+        /// <summary>
+        ///     Called after the transition in for the scene has completed.
+        /// </summary>
         public override void Begin()
         {
             base.Begin();
 
+            //  Set the present enumerator.
             _present = PresentScreen();
         }
 
+        /// <summary>
+        ///     Initialize the scene.
+        /// </summary>
         public override void Initialize()
         {
             base.Initialize();
+
+            //  Initialize the rect used for the backgorund.
             _backgroundDestination = new Rectangle
             {
                 X = 0,
@@ -93,27 +113,61 @@ namespace Aristurtle.TinyGame.Scenes
                 Width = Engine.Graphics.Resolution.X,
                 Height = Engine.Graphics.Resolution.Y
             };
-        }
-        public override void LoadContent()
-        {
-            base.LoadContent();
 
-            SpriteFont font = Engine.GlobalContent.Load<SpriteFont>("RussoOne64");
+            //  Create the text to show on screen.
+            SpriteFont font = GameBase.EssentialGameAssets["font64"] as SpriteFont;
             _text = new(font, "Created By AristurtleDev", _textColor * 0.0f);
             _text.Position = Engine.Graphics.Resolution.HalfValue().ToVector2();
             _text.CenterOrigin();
 
-            _backgroundPattern = new(Engine.GlobalContent.Load<Texture2D>("background_pattern"));
+            //  Initialize the background pattern.
+            _backgroundPattern = GameBase.EssentialGameAssets["backgroundTex"] as TinyTexture;
+        }
+
+        /// <summary>
+        ///     Load all initial game content.
+        /// </summary>
+        public override void LoadContent()
+        {
+            base.LoadContent();
+
+            //  Start the music
             GameBase.Music.PlaySong(SongTitle.Realizer);
 
+            //  Load fonts
+            SpriteFont font32 = Engine.GlobalContent.Load<SpriteFont>("RussoOne32");
+            SpriteFont font64 = Engine.GlobalContent.Load<SpriteFont>("RussoOne64");
+            SpriteFont font128 = Engine.GlobalContent.Load<SpriteFont>("RussoOne128");
+
+            //  Load textures
+            TinyTexture backgroundTex = new(Engine.GlobalContent.Load<Texture2D>("background_pattern"));
+            TinyTexture gridCelTex = new(Engine.GlobalContent.Load<Texture2D>("grid_cell"));
+
+            //  Put the content in the essentials dictionary
+            GameBase.EssentialGameAssets.Add(nameof(font32), font32);
+            GameBase.EssentialGameAssets.Add(nameof(font64), font64);
+            GameBase.EssentialGameAssets.Add(nameof(font128), font128);
+            GameBase.EssentialGameAssets.Add(nameof(backgroundTex), backgroundTex);
+            GameBase.EssentialGameAssets.Add(nameof(gridCelTex), gridCelTex);
+
+            GameBase.Music.LoadEffects();
         }
 
 
+        /// <summary>
+        ///     An enumeration that is used to displaythe Created By text on 
+        ///     the screen, fading it in, then fading it back out
+        /// </summary>
+        /// <returns></returns>
         private IEnumerator PresentScreen()
         {
+            //  A 0.5 second timespan.
             TimeSpan halfSecond = TimeSpan.FromSeconds(0.5);
+
+            //  A 1 second timespan.
             TimeSpan oneSecond = TimeSpan.FromSeconds(1);
 
+            //  Set the initial timer to 0.5 seconds.
             TimeSpan timer = halfSecond;
 
             //  Fade text in
@@ -124,6 +178,8 @@ namespace Aristurtle.TinyGame.Scenes
                 yield return null;
             }
 
+            //  Set the timer to 1 second, this is used to pause the fade on
+            //  the text by 1 second before fading out.
             timer = oneSecond;
 
             //  Present text for one second
@@ -133,6 +189,7 @@ namespace Aristurtle.TinyGame.Scenes
                 yield return null;
             }
 
+            //  Set the timer back to 0.5 seconds to fade it out.
             timer = halfSecond;
 
             //  Fade text out
@@ -142,48 +199,57 @@ namespace Aristurtle.TinyGame.Scenes
                 _alpha = MathHelper.LerpPrecise(1.0f, 0.0f, 1.0f - (float)(timer / halfSecond));
                 yield return null;
             }
-
-
-            //  End the present text, show the loading text
-            _text.Value = "Loading...";
-            _text.CenterOrigin();
-            _text.Color = Color.White;
-
         }
 
+        /// <summary>
+        ///     Update the scene.
+        /// </summary>
         public override void Update()
         {
-            if (_loaded)
+            if (_changeScene)
             {
                 ChangeScene(new TitleScene(_input), new EvenOddTileTransition(), new EvenOddTileTransition());
             }
             else
             {
-
+                //  As long as we are presenting, continue to move to the next
+                //  iteration of the presenter.
                 if (_present != null && _present.MoveNext())
                 {
+                    //  Adjust the color fo the text by the alpha value that
+                    //  is calculated in the presenter enumeration.  
                     _text.Color = _textColor * _alpha;
 
+                    //  If the user presses any button, then they can skip the
+                    //  presentation screen and move on immediatly to the
+                    //  next scene.
                     if (_input.AnyButtonPressed)
                     {
-                        _skipped = true;
+                        _changeScene = true;
                     }
                 }
                 else if (_present != null)
                 {
+                    //  This will only occur when the presenter finished, so
+                    //  we can flag now to change scene.
                     _present = null;
-                    _loaded = true;
+                    _changeScene = true;
                 }
             }
 
+            //  Update the background source rect so it is moving.
             _backgroundSource.X = (_backgroundSource.X + 1) % _backgroundPattern.Width;
             _backgroundSource.Y = (_backgroundSource.Y - 1) % _backgroundPattern.Height;
         }
 
+        /// <summary>
+        ///     Draws this scene.
+        /// </summary>
         public override void Draw()
         {
             base.Draw();
 
+            //  Prepare the graphics for rendering.
             Engine.Graphics.Device.SetRenderTarget(RenderTarget);
             Engine.Graphics.Device.Viewport = new Viewport(RenderTarget.Bounds);
             Engine.Graphics.Clear();
@@ -198,6 +264,7 @@ namespace Aristurtle.TinyGame.Scenes
             Engine.Graphics.SpriteBatch.DrawString(_text);
             Engine.Graphics.SpriteBatch.End();
 
+            //  Alwoys derefernce the scenes render target when finished.
             Engine.Graphics.Device.SetRenderTarget(null);
         }
 

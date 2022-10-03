@@ -30,17 +30,33 @@ namespace Aristurtle.TinyGame.Scenes
 {
     public class TitleScene : BaseScene
     {
+        //  The font used by hud elements.
         SpriteFont _hudFont;
+
+        //  The font used for the title display.
         SpriteFont _titleFont;
 
+        //  Text object that displays the title text.
         private Text _titleText;
-        private TextBuilder _pressToStartText;
-        Rectangle _titleTextContainer;
 
-        //  A rectangle value used to render a container rectangle for the 
-        //  _pressToStartText text.
-        Rectangle _containerRect;
+        //  Text object that displays the press to start text.
+        private Text _pressToStartText;
+        
 
+        //  Rect used to define the bounds of the container for the title text.
+        Rectangle _titleTextContainerRect;
+
+
+        //  Rect used to define the bounds for the bottom container
+        Rectangle _bottomContainerRect;
+
+        /// <summary>
+        ///     Creates a new <see cref="TitleScene"/> instance..
+        /// </summary>
+        /// <param name="input">
+        ///     The input profile for the game.
+        /// </param>
+        /// <returns></returns>
         public TitleScene(InputProfile input) : base(input)
         {
             _bgOffsetDirection = new Point(-1, -1);
@@ -53,69 +69,59 @@ namespace Aristurtle.TinyGame.Scenes
             InitializeTitleBanner();
         }
 
+        /// <summary>
+        ///     Initializes the text and container for the press to start text.
+        /// </summary>
         private void InitializePressToStartText()
         {
-            _pressToStartText = new TextBuilder();
-            _pressToStartText.Add(_hudFont, "Press Enter to start ", Color.White);
-            // _pressToStartText.Add(_controllerFont, "a", Color.White, 0.5f);
-            // _pressToStartText.Add(_hudFont, " to start ", Color.White);
+            //  Create the container rect.
+            _bottomContainerRect = new Rectangle();
+            _bottomContainerRect.Width = Engine.Graphics.Resolution.X;
+            _bottomContainerRect.Height = 80;
+            _bottomContainerRect.X = 0;
+            _bottomContainerRect.Y = Engine.Graphics.Resolution.Y - _bottomContainerRect.Height;
 
-            Vector2 margin = new Vector2(20, 20);
-
-            _containerRect = new Rectangle();
-            _containerRect.X = 0;
-            _containerRect.Height = (int)_pressToStartText.Size.Y + ((int)margin.Y * 2);
-            _containerRect.Width = Engine.Graphics.Resolution.X;
-            _containerRect.Y = Engine.Graphics.Resolution.Y - _containerRect.Height;
-
-
-            _pressToStartText.Position = new Vector2
-            {
-                X = _containerRect.Center.X,
-                Y = _containerRect.Center.Y
-            };
-            _pressToStartText.Origin = new Vector2(_pressToStartText.Size.X * 0.5f, _pressToStartText.Size.Y * 0.5f);
+            //  Create the text object. Position it so it's center of the rect
+            _pressToStartText = new(_hudFont, "Press Enter To Start");
+            _pressToStartText.X = _bottomContainerRect.Center.X;
+            _pressToStartText.Y = _bottomContainerRect.Center.Y;
+            _pressToStartText.CenterOrigin();
         }
 
+        /// <summary>
+        ///     Initializes the text and container for the title banner.
+        /// </summary>
         private void InitializeTitleBanner()
         {
-            int rectWidth = 774;
-            int rectHeight = 214;
-            _titleTextContainer = new Rectangle()
-            {
-                X = (Engine.Graphics.Resolution.X / 2) - (rectWidth / 2),
-                Y = ((Engine.Graphics.Resolution.Y - _containerRect.Height) / 2) - (rectHeight / 2),
-                Width = rectWidth,
-                Height = rectHeight
-            };
+            _titleTextContainerRect = new();
+            _titleTextContainerRect.Width = 774;
+            _titleTextContainerRect.Height = 214;
+            _titleTextContainerRect.X = (Engine.Graphics.Resolution.X / 2) - (_titleTextContainerRect.Width / 2);
+            _titleTextContainerRect.Y = ((Engine.Graphics.Resolution.Y - _bottomContainerRect.Height) / 2) - (_titleTextContainerRect.Height / 2);
 
+            //  Create the title string, but wrap it so it wraps within the
+            //  container
             string title = "It's Snake, But Every 10 Seconds Food Turns Into Walls";
+            title = Maths.WordWrap(_titleFont, title, _titleTextContainerRect.Width - 5);
 
-            title = Maths.WordWrap(_titleFont, title, _titleTextContainer.Width - 5);
-
-            // _titleText = new Text(_titleFont, "Tiny Snake", Color.Black);
+            //  Create the title text object. Position it so it's in the center
+            //  of the container.
             _titleText = new Text(_titleFont, title, Color.Black);
-
-            _titleText.Position = new Vector2
-            {
-                X = Engine.Graphics.Resolution.X * 0.5f,
-                Y = (Engine.Graphics.Resolution.Y - _containerRect.Height) * 0.5f
-            };
+            _titleText.X = _titleTextContainerRect.Center.X;
+            _titleText.Y = _titleTextContainerRect.Center.Y;
             _titleText.CenterOrigin();
         }
 
-        TinyTexture _abutton;
         public override void LoadContent()
         {
             base.LoadContent();
-            _hudFont = Engine.GlobalContent.Load<SpriteFont>("RussoOne32");
-            _titleFont = Engine.GlobalContent.Load<SpriteFont>("russoOne64");
-
-            // Assets.TryGetFont("Controller", 64.0f, out _controllerFont);
-            // Assets.ControllerIcons.TryGetSprite("left_thumbstick_down", out _abutton);
-
+            _hudFont = GameBase.EssentialGameAssets["font32"] as SpriteFont;
+            _titleFont = GameBase.EssentialGameAssets["font64"] as SpriteFont;
         }
 
+        /// <summary>
+        ///     Unloads content references from this scene.
+        /// </summary>
         public override void UnloadContent()
         {
             base.UnloadContent();
@@ -125,55 +131,56 @@ namespace Aristurtle.TinyGame.Scenes
             _titleFont = null;
         }
 
+        /// <summary>
+        ///     Updates this scene.
+        /// </summary>
         public override void Update()
         {
             base.Update();
-            if (_input.TitleStart.Pressed)
+
+            //  If the user presses the start button, start the game.
+            if (_input.TitleAction.Pressed)
             {
-                _input.TitleStart.ConsumePress();
+                _input.TitleAction.ConsumePress();
                 ChangeScene(new PlayScene(_input), new FadeTransition(), new FadeTransition());
             }
-
         }
 
-
+        /// <summary>
+        ///     Draws this scene.
+        /// </summary>
         public override void Draw()
         {
+            //  Prepare the graphics
             Engine.Graphics.Device.SetRenderTarget(RenderTarget);
             Engine.Graphics.Device.Viewport = new Viewport(RenderTarget.Bounds);
             Engine.Graphics.Clear();
 
             DrawBackground();
-
-            Engine.Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, null);
-
-            DrawTitleBanner();
-            Engine.Graphics.SpriteBatch.End();
-
-            Engine.Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.LinearClamp, null, null, null, null);
-            DrawPressAnyKey();
-            Engine.Graphics.SpriteBatch.End();
-
+            DrawHud();
             base.Draw();
 
-
-
-
+            //  Alwoys derefernce the scenes render target when finished.
             Engine.Instance.GraphicsDevice.SetRenderTarget(null);
         }
 
-        private void DrawTitleBanner()
+        /// <summary>
+        /// ///     Draws the hud.
+        /// </summary>
+        private void DrawHud()
         {
-            Engine.Graphics.SpriteBatch.DrawRectangle(_titleTextContainer, new Color(238, 255, 204));
-            Engine.Graphics.SpriteBatch.DrawHollowRectangle(_titleTextContainer, Color.Black);
+            Engine.Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, null);
+
+            //  Draw the title banner
+            Engine.Graphics.SpriteBatch.DrawRectangle(_titleTextContainerRect, new Color(238, 255, 204));
+            Engine.Graphics.SpriteBatch.DrawHollowRectangle(_titleTextContainerRect, Color.Black);
             Engine.Graphics.SpriteBatch.DrawString(_titleText);
-        }
 
-        private void DrawPressAnyKey()
-        {
-
-            Engine.Graphics.SpriteBatch.DrawRectangle(_containerRect, Color.Black);
+            //  Draw the press to start section.
+            Engine.Graphics.SpriteBatch.DrawRectangle(_bottomContainerRect, Color.Black);
             Engine.Graphics.SpriteBatch.DrawString(_pressToStartText);
+
+            Engine.Graphics.SpriteBatch.End();
         }
     }
 }

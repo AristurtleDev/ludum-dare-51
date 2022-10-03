@@ -25,14 +25,11 @@ SOFTWARE.
 using System;
 using System.IO;
 using Aristurtle.TinyEngine;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 using NAudio.Wave;
 namespace Aristurtle.TinyGame;
 
-public enum SongTitle
-{
-    [Song("audio/realizer.mp3", 124.0f, true)]
-    Realizer
-}
 
 public class Conductor
 {
@@ -42,10 +39,14 @@ public class Conductor
     //  The audio file used by NAudio to play the song
     private AudioFileReader _audioFile;
 
+    private SoundEffect _badEffect;
+    private SoundEffect _goodEffect;
+
     //  The time fo the last beat detected.
     private float _lastBeat;
 
     public int Volume { get; set; } = 50;
+    private float _actualVolume;
 
     /// <summary>
     ///     Event handler for when a beat occurs.
@@ -79,20 +80,29 @@ public class Conductor
     /// <summary>
     ///     Creates a new Conductor instance
     /// </summary>
-    public Conductor() { }
+    public Conductor()
+    {
+        SetActualVolume();
+    }
+
+    public void LoadEffects()
+    {
+        _badEffect = Engine.GlobalContent.Load<SoundEffect>("audio/bad");
+        _goodEffect = Engine.GlobalContent.Load<SoundEffect>("audio/good");
+    }
 
     public void PlaySong(SongTitle title)
     {
         SongModel = title.GetSongModel();
 
         //  Initialize the output device if its null
-        if(_outputDevice == null)
+        if (_outputDevice == null)
         {
             _outputDevice = new WaveOutEvent();
         }
 
         //  Iniitlize the audio file if its null
-        if(_audioFile == null)
+        if (_audioFile == null)
         {
             _audioFile = new AudioFileReader(Path.Combine(FileUtilities.AssemblyDirectory, "Content", SongModel.Location));
         }
@@ -114,7 +124,7 @@ public class Conductor
     public void Update()
     {
         //  Check if playback has stopped, if so, execute event
-        if(_outputDevice.PlaybackState == PlaybackState.Stopped)
+        if (_outputDevice.PlaybackState == PlaybackState.Stopped)
         {
             OnMusicStopped?.Invoke(this, EventArgs.Empty);
         }
@@ -122,7 +132,7 @@ public class Conductor
         //  Update the song position
         SongPosition = (float)(_outputDevice.GetPosition() * 1d / _outputDevice.OutputWaveFormat.AverageBytesPerSecond);
         //  Check if a new beat has occured
-        if(SongPosition > _lastBeat + Crochet)
+        if (SongPosition > _lastBeat + Crochet)
         {
             //  Increment the time the last beat occured
             _lastBeat += Crochet;
@@ -134,7 +144,7 @@ public class Conductor
             Beat(new BeatEventArgs() { SongPosition = SongPosition, BeatCount = BeatCount });
         }
 
-        if(_audioFile.Position >= _audioFile.Length)
+        if (_audioFile.Position >= _audioFile.Length)
         {
             _audioFile.Position = 0;
         }
@@ -163,68 +173,33 @@ public class Conductor
     {
         Volume = Math.Min(Volume + 10, 100);
 
-        float actualVolume = Math.Min((float)Math.Pow(Volume / 100.0f, Math.E), 1.0f);
-
-        _outputDevice.Volume = actualVolume;
+        SetActualVolume();
+        _outputDevice.Volume = _actualVolume;
+        MediaPlayer.Volume = _actualVolume;
     }
 
     public void DecreaseVolume()
     {
-         Volume = Math.Max(Volume - 10, 0);
-
-        float actualVolume = Math.Max((float)Math.Pow(Volume / 100.0f, Math.E), 0.0f);
-
-        _outputDevice.Volume = actualVolume;
-    }
-}
-
-public class BeatEventArgs : EventArgs
-{
-    public float SongPosition { get; set; }
-    public int BeatCount { get; set; }
-}
-
-public class LoopStream : WaveStream
-{
-    private WaveStream _source;
-
-    public bool EnableLooping { get; set; }
-    public override WaveFormat WaveFormat => _source.WaveFormat;
-    public override long Length => _source.Length;
-    public override long Position 
-    {
-        get => _source.Position;
-        set => _source.Position = value;
+        Volume = Math.Max(Volume - 10, 0);
+        SetActualVolume();
+        _outputDevice.Volume = _actualVolume;
+        MediaPlayer.Volume = _actualVolume;
     }
 
-
-    public LoopStream(WaveStream source)
+    private void SetActualVolume()
     {
-        _source = source;
-        EnableLooping = true;
+        _actualVolume = Math.Max((float)Math.Pow(Volume / 100.0f, Math.E), 0.0f);
     }
 
-    public override int Read(byte[] buffer, int offset, int count)
+    public void PlaySoundEffect(SoundEffectName effect)
     {
-        int totalRead = 0;
-
-        while (totalRead < count)
+        if (effect == SoundEffectName.Bad)
         {
-            int bytesRead = _source.Read(buffer, offset + totalRead, count - totalRead);
-
-            if (bytesRead == 0)
-            {
-                if (_source.Position == 0 || !EnableLooping)
-                {
-                    break;
-                }
-
-                _source.Position = 0;
-            }
-            totalRead += bytesRead;
+            _badEffect.Play(Volume / 100.0f, 0.0f, 0.0f);
         }
-
-        return totalRead;
+        else
+        {
+            _goodEffect.Play(Volume / 100.0f, 0.0f, 0.0f);
+        }
     }
-
 }

@@ -26,9 +26,32 @@ using System;
 
 namespace Aristurtle.TinyGame;
 
+/// <summary>
+///     An attribute that can be used for the <see cref="SongTitle"/> enum
+///     that contains information about the song.
+/// </summary>
 public class SongAttribute : Attribute
 {
+    /// <summary>
+    ///     The DTO model within information about the song.
+    /// </summary>
     public SongModel SongModel;
+
+    /// <summary>
+    ///     Creates a new <see cref="SongAttribute"/> instance.
+    /// </summary>
+    /// <param name="location">
+    ///     The file location of the song, relative to the content directory.
+    /// </param>
+    /// <param name="bpm">
+    ///     The beats per minute of the song. Used to calculate the crochet.
+    /// </param>
+    /// <param name="repeats">
+    ///     Should the song repeat when finished.
+    /// </param>
+    /// <param name="offset">
+    ///     The offset to start playback at.
+    /// </param>
     public SongAttribute(string location, float bpm, bool repeats, float offset = 0.0f)
     {
         SongModel = new(location, bpm, repeats, offset);
