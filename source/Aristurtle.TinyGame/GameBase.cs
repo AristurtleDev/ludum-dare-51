@@ -65,6 +65,7 @@ public class GameBase : Engine
     {
         base.LoadContent();
         // Assets.LoadEssential();
+        Window.Title = "It's Snake, But Every 10 Seconds The Food Turns Into Walls";
     }
 
     protected override void Update(GameTime gameTime)

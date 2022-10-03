@@ -81,8 +81,6 @@ public class Engine : Game
             title = "No Title";
         }
 
-        Window.Title = title;
-
         Graphics = new(this, options);
         Graphics.ClientSizeChanged += OnClientSizeChanged;
         Graphics.GraphicsDeviceReset += OnGraphicsDeviceReset;
